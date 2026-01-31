@@ -1,0 +1,732 @@
+ <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>saha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { font-family: 'Cairo', sans-serif !important; box-sizing: border-box; }
+    body { background-color: #ffffff; margin: 0; padding: 0; direction: rtl; }
+    .header { background-color: #ffffff; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; position: relative; top: -100px; opacity: 0; transition: top 0.8s ease, opacity 0.8s ease; }
+    .header.show { top: 0; opacity: 1; }
+    .menu-icon { font-size: 26px; color: #67b3f5; cursor: pointer; }
+    .logo { height: 70px; object-fit: contain; }
+    .main-description {
+      font-size: 13px;
+      white-space: normal;
+      line-height: 1.6;
+      margin: 10px 20px 20px;
+    }
+    @media (max-width: 400px) {
+      .main-description {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    }
+
+    /* New styles for h1 and its container */
+    .h1-container {
+      text-align: center; /* To center the inline-block h1 */
+      margin-top: 40px; /* Adjust margin as needed */
+    }
+    h1 {
+      color: #2e6fb3;
+      font-weight: 700;
+      font-size: 38px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      display: inline-block; /* Make h1 take only content width */
+      position: relative; /* For positioning the pseudo-element */
+      padding: 0 5px; /* Add some padding around the text for the background */
+      z-index: 1; /* Ensure text is above the background */
+    }
+    h1::before {
+      content: "";
+      position: absolute;
+      top: 50%; /* Center vertically */
+      left: 0;
+      width: 100%;
+      height: 15px; /* Height of the background line */
+      background-color: #e0f0ff; /* Light blue color for the line */
+      transform: translateY(-50%); /* Adjust for perfect vertical centering */
+      z-index: -1; /* Place behind the text */
+      border-radius: 3px; /* Optional: slightly rounded corners for the line */
+    }
+
+    p { color: #6d7781; text-align: center; font-size: 16px; margin: 10px 20px 30px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05); }
+    .input-container { position: relative; margin-bottom: 1.5em; }
+    .input-field { width: calc(100% - 30px); display: block; padding: 3px 12px; font-size: 14.5px; margin: 10px auto; border: 1px solid #ccc; border-radius: 8px; background-color: white; text-align: right; transition: border-color 0.3s ease; }
+    .input-field:focus { border-color: #67b3f5; outline: none; }
+    .center-btn, .back-btn, .new-btn, .back-list-btn { display: block; margin: 15px auto; padding: 6px 10px; background-color: #2e6fb9; color: white; border: none; border-radius: 8px; font-size: 12px; width: 120px; cursor: pointer; position: relative; overflow: hidden; transition: background-color 0.2s ease; /* Added transition for color change */ }
+    /* Style for button when loading */
+    .center-btn.loading {
+      background-color: #24568f; /* Darker blue */
+      cursor: wait;
+    }
+    /* Original error tab for incorrect data */
+    .error-tab { background-color: #ffe5e5; color: red; text-align: center; padding: 10px; margin: 10px auto; border-radius: 5px; width: calc(100% - 40px); display: none; /* Hidden by default */ }
+    .result-box { background-color: #f0f0f0; padding: 20px; margin: 40px auto 20px; border-radius: 8px; width: calc(100% - 40px); text-align: center; display: none; /* Hidden by default */ }
+    .info-label { font-weight: bold; margin-top: 10px; }
+    .info-data { margin-bottom: 15px; }
+    .footer { background-color: #2e6fb2; color: white; padding: 20px 15px 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; font-size: 14px; direction: rtl; min-height: 180px; gap: 15px; position: relative; }
+    .footer img.logo-footer { height: 70px; filter: none; margin-bottom: 10px; }
+    .footer-text { font-size: 14px; line-height: 1.7; white-space: normal; max-width: 700px; }
+    .main-menu-title { font-weight: 700; font-size: 16px; margin-top: 30px; position: relative; display: inline-block; color: white; cursor: default; }
+    .main-menu-title::after { content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 130%; height: 3px; background-color: #a3c1e5; border-radius: 2px; }
+    .footer-links { margin-top: 5px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; user-select: none; width: 100%; max-width: 320px; padding: 0 10px; }
+    .footer-links div { cursor: default; color: #ffffff; font-weight: normal; padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.3); margin: 0 8px; }
+    .popup-menu { position: fixed; top: 60px; left: 0; width: 100%; height: 50vh; background-color: #f8fcff; display: none; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 30px; z-index: 999; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); }
+    .popup-menu .menu-item { font-size: 15px; color: #226699; margin: 15px 0; cursor: pointer; text-decoration: underline; }
+    .popup-menu .menu-login { background-color: #3c8dc4; color: white; padding: 8px 20px; border-radius: 12px; margin-top: 12px; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    .popup-menu .menu-login span { margin-right: 8px; }
+    .popup-menu .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; color: #333; cursor: pointer; }
+    .new-btn, .back-list-btn { display: none; }
+    .bold { font-weight: bold; color: black; }
+    .normal { font-weight: normal; color: black; }
+    .info-label.bold { margin-bottom: 5px; }
+    .info-label.normal { margin-top: 10px; }
+    .contact-title { font-weight: 700; font-size: 16px; margin-top: 20px; color: white; }
+    .contact-line { width: 160px; height: 4px; background-color: #a3c1e5; margin: 6px auto 2px auto; border-radius: 1px; }
+    .contact-info { font-size: 14px; line-height: 1.6; color: white; max-width: 320px; text-align: center; user-select: none; }
+
+    /* --- Styles for Loading Spinner --- */
+    .loading-spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px; /* Space between spinner and text */
+      vertical-align: middle;
+      display: none; /* Hidden by default */
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* --- Styles for Empty Field Error Message --- */
+    .empty-field-error {
+      background-color: #feeeee; /* Light red, almost white */
+      color: #a00000; /* Dark red, almost black */
+      text-align: center;
+      padding: 10px;
+      margin: 15px auto 10px;
+      border-radius: 5px;
+      width: calc(100% - 40px);
+      font-weight: normal; /* Set to normal as requested */
+      display: none; /* Hidden by default */
+      transition: margin-top 0.3s ease; /* Transition for movement */
+    }
+
+  </style>
+
+</head>
+<body>
+  <div class="header" id="header">
+    <img src="https://www.elsob7.com/wp-content/uploads/2025/03/الاستعلام-عن-إجازة-مرضية-عبر-منصة-صحة.png" alt="شعار صحة" class="logo" />
+    <div class="menu-icon" id="menuIcon" onclick="toggleMenu()">&#9776;</div>
+  </div>
+
+  <div class="popup-menu" id="popupMenu">
+    <div class="close-btn" onclick="toggleMenu()">X</div>
+    <a href="https://www.seha.sa/ui#/services" class="menu-item" onclick="toggleMenu()">الخدمات</a>
+    <a href="https://www.seha.sa/ui#/inquiries" class="menu-item" onclick="toggleMenu()">الاستعلامات</a>
+    <a href="https://www.seha.sa/ui#/iamredirection/1" class="menu-item" onclick="toggleMenu()">إنشاء حساب</a>
+    <a href="https://www.seha.sa/ui#/account/login" class="menu-login" onclick="toggleMenu()"><span>👨‍💼</span>تسجيل الدخول</a>
+  </div>
+
+  <!-- Wrapped h1 in a container for centering and background line -->
+  <div class="h1-container">
+      <h1>الإجازات المرضية</h1>
+  </div>
+  
+  <p class="main-description">
+    خدمة الاستعلام عن الإجازات المرضية تتيح لك الاستعلام عن حالة طلبك للإجازة ويمكنك طباعتها عن طريق تطبيق صحتي
+  </p>
+
+  <!-- Empty Field Error Message Container -->
+  <div id="emptyFieldsError" class="empty-field-error">فضلا اكتب الرمز</div>
+
+  <div class="input-container" id="leaveCodeContainer">
+    <input id="leaveCode" type="text" class="input-field" placeholder="رمز الخدمة" maxlength="14" oninput="hideEmptyError()" />
+  </div>
+  <div class="input-container" id="idNumberContainer">
+    <input id="idNumber" type="text" class="input-field" placeholder="رقم الهوية / الإقامة" maxlength="11" inputmode="text" oninput="hideEmptyError()" />
+  </div>
+
+  <!-- Original Error Tab for incorrect data -->
+  <div id="errorTab" class="error-tab">خطأ في البيانات</div>
+
+  <button class="center-btn" id="searchBtn" onclick="checkData()">
+    <span id="searchBtnText">استعلام</span>
+    <span id="loadingSpinner" class="loading-spinner"></span>
+  </button>
+<a href="https://www.seha.sa/ui#/inquiries" class="back-btn" id="backBtn" style="text-decoration: none; display: block; text-align: center;">رجوع للاستعلامات</a>
+
+  <div id="resultBox" class="result-box"></div>
+
+  <button class="new-btn" id="newSearchBtn" onclick="newSearch()">استعلام جديد</button><a href="https://www.seha.sa/ui#/inquiries" class="back-list-btn" id="backListBtn" style="text-decoration: none; display: none; text-align: center;">رجوع للاستعلامات</a>
+  <br><br><br><br><br><br>
+<div class="footer">
+    <img src="https://www.seha.sa/assets/logo-white-CKxLEirV.svg" alt="شعار صحة" class="logo-footer" style="margin-top: 20px;" />
+    <div class="mine-text">
+      منصة صحة تخدم جميع المنشأت الطبية من خلال تقديم الخدمات الصحية إلكترونياً لجميع المنشأت الطبية وتسعى إلى توحيد وأتمتة الاجراءات والخدمات بما في دوره رفع جودة الاداء وخفض التكاليف.
+    </div>
+    <div class="main-menu-title">القائمة الرئيسية</div>
+    <div class="footer-links">
+      <div><a href="https://www.seha.sa/ui#/services" style="color: white; text-decoration: none;">الخدمات</a></div>
+      <div><a href="https://www.seha.sa/ui#/inquiries" style="color: white; text-decoration: none;">الاستعلامات</a></div>
+      <div><a href="https://www.seha.sa/ui#/faq" style="color: white; text-decoration: none;">الأسئلة الشائعة</a></div>
+      <div><a href="https://www.seha.sa/ui#/ContactUs" style="color: white; text-decoration: none;">تواصل معنا</a></div>
+    </div>
+    <div class="contact-title">تواصل معنا</div>
+    <div class="contact-line"></div>
+    <div class="contact-section" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; width: 100%; max-width: 800px;">
+      <div style="text-align: right;">
+        <div class="contact-icon">
+          <i class=""></i>
+          <span> اتصال📞 920002005</span>
+        </div>
+        <div class="contact-icon">
+          <i class=""></i>
+          <span>البريد الاكتروني  ✉ support@seha.sa</span>
+        </div>
+        <div class="contact-icon">
+          <i class=""></i>
+          <span>وتساب📱 920002005</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <img src="https://www.seha.sa/assets/lean-logo-De0NEeoI.svg" style="height: 50px;" alt="شعار لين" />
+        <div style="height: 50px; border-right: 2px solid white;"></div>
+        <img src="https://www.seha.sa/assets/MOH-logo-DYiHZCSg.svg" style="height: 50px;" alt="شعار الصحة" />
+      </div>
+    </div>
+    <br><br>
+    <div class="working-hours">
+      أوقات العمل : الأحد حتى الخميس 8 ص - 11 م
+    <br><br><br>
+    <div class="footer-bottom-text">
+      منصة صحة معتمدة من قبل وزارة الصحة 2025<br>
+      سياسة الخصوصية وشروط الإستخدام | دليل الاستخدام
+    </div>
+  </div>
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('popupMenu');
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function initializeData() {
+      const data = [
+        {
+          leaveCode: "GSL24427523854",
+          idNumber: "1104060254",
+          name: "   لمياء صالح راشد المغير             ",
+          from: "2025-07-27",
+          to: "2025-07-27",
+          days: "1",
+          doctor: "   منيرة سالم صالح الصياد     ",
+          title: "طبيب عام   ",
+          date: "2025-07-27"
+        },
+        {
+          leaveCode: "GSL24427523854",
+          idNumber: "1044713145",
+          name: "   بندر محمد بن محمدصالح الحربي            ",
+          from: "2025-08-23",
+          to: "2025-08-23",
+          days: "1",
+          doctor: " فادي محسن مهدي الشهري      ",
+          title: "طبيب عام  ",
+          date: "2025-08-23"
+        },
+        {
+          leaveCode: "GSL55886151331",
+          idNumber: "2133546982",
+          name: "      إبراهيم علي محمد الزرقاني   ",
+          from: "2025-06-11",
+          to: "2025-06-17",
+          days: "7",
+          doctor: "  محمد الشهراني  ",
+          title: " طب بشري ",
+          date: "2025-06-11"
+        },
+        {
+          leaveCode: "GSL25060111760",
+          idNumber: "1097131021",
+          name: "    هيف ظافر آل سليم     ",
+          from: "2025-06-12",
+          to: "2025-06-12",
+          days: "1",
+          doctor: "محمد جمال خلف   ",
+          title: "طب بشري ",
+          date: "2025-06-12"
+        },
+        {
+          leaveCode: "GSL25060111760",
+          idNumber: "1122828492",
+          name: "    عماد جمعان علي جيزاني      ",
+          from: "2025-06-13",
+          to: "2025-06-13",
+          days: "1",
+          doctor: "  علي فتح   ",
+          title: "طب بشري ",
+          date: "2025-06-13"
+        },
+        {
+          leaveCode: "GSL25060111760",
+          idNumber: "1093345757",
+          name: "      منى علي جابر جعفري      ",
+          from: "2025-06-13",
+          to: "2025-06-13",
+          days: "1",
+          doctor: "  محمد جمال خلف     ",
+          title: "طب بشري ",
+          date: "2025-06-13"
+        },
+        {
+          leaveCode: "GSL25060111760",
+          idNumber: "1135758827",
+          name: "   وليد علي حسن عسيري      ",
+          from: "2025-06-11",
+          to: "2025-06-11",
+          days: "1",
+          doctor: "  علي فتح   ",
+          title: "طب بشري ",
+          date: "2025-06-11"
+        },
+        {
+          leaveCode: "GSL25060111760",
+          idNumber: "1125336295",
+          name: "   احمد عبدالرزاق احمد شيبان       ",
+          from: "2025-06-14",
+          to: "2025-06-14",
+          days: "1",
+          doctor: "  علي فتح   ",
+          title: "طب بشري ",
+          date: "2025-06-14"
+        },
+        {
+          leaveCode: "GSL25065528128",
+          idNumber: "1133692424",
+          name: "   شهد محمد مرزوق الجدعاني         ",
+          from: "2025-06-14",
+          to: "2025-06-14",
+          days: "1",
+          doctor: "طارق جابر     ",
+          title: "طب بشري ",
+          date: "2025-06-14"
+        },
+                {
+          leaveCode: "GPL88223791200",
+          idNumber: "1122139015",
+          name: "   خالد عزيز محمد المالكي      ",
+          from: "2025-06-13",
+          to: "2025-06-14",
+          days: "2",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-06-13"
+        },
+                {
+          leaveCode: "GSL25060111760",
+          idNumber: "1090361872",
+          name: "     هنادي محمد بالغيث القرني       ",
+          from: "2025-06-10",
+          to: "2025-06-10",
+          days: "1",
+          doctor: "أمان الله خان   ",
+          title: "طب بشري ",
+          date: "2025-06-10"
+        },
+                {
+          leaveCode: "GPL88223791200",
+          idNumber: "1090361872",
+          name: "   هنادي محمد بالغيث القرني         ",
+          from: "2025-06-15",
+          to: "2025-06-15",
+          days: "1",
+          doctor: "  أمان الله خان   ",
+          title: "طب بشري ",
+          date: "2025-06-15"
+        },
+                {
+          leaveCode: "GSL24844512328",
+          idNumber: "1118202231",
+          name: "      نواف سعيد فازع المطيري      ",
+          from: "2025-05-27",
+          to: "2025-05-27",
+          days: "1",
+          doctor: "محمد جمال خلف   ",
+          title: "طب بشري ",
+          date: "2025-05-27"
+        },
+                {
+          leaveCode: "GSL25065528128",
+          idNumber: "1118202231",
+          name: "   نواف سعيد فازع المطيري         ",
+          from: "2025-06-11",
+          to: "2025-06-12",
+          days: "2",
+          doctor: "محمد جمال خلف   ",
+          title: "طب بشري ",
+          date: "2025-06-11"
+        },
+                {
+          leaveCode: "GPL88223791200",
+          idNumber: "1118202231",
+          name: "   نواف سعيد فازع المطيري        ",
+          from: "2025-06-03",
+          to: "2025-06-03",
+          days: "1",
+          doctor: "محمد جمال خلف   ",
+          title: "طب بشري ",
+          date: "2025-06-03"
+        },
+                {
+          leaveCode: "GSL88832169584",
+          idNumber: "1093345757",
+          name: "   منى علي جابر جعفري         ",
+          from: "2025-06-04",
+          to: "2025-06-04",
+          days: "1",
+          doctor: "  شيخ اخلاق   ",
+          title: "طب بشري ",
+          date: "2025-06-04"
+        },
+                {
+          leaveCode: "GSL96543180027",
+          idNumber: "1093345757",
+          name: "      منى علي جابر جعفري      ",
+          from: "2025-06-02",
+          to: "2025-06-02",
+          days: "1",
+          doctor: "  شيخ اخلاق   ",
+          title: "طب بشري ",
+          date: "2025-06-02"
+        },
+                {
+          leaveCode: "GSL25060111760",
+          idNumber: "1127935219",
+          name: "      زياد عبدالكريم سالم الزهراني      ",
+          from: "2025-05-29",
+          to: "2025-05-29",
+          days: "1",
+          doctor: "احمد سالم جعمان السعدي     ",
+          title: "طب بشري ",
+          date: "2025-05-29"
+        },
+                {
+          leaveCode: "GSL67987664312",
+          idNumber: "1127935219",
+          name: " زياد عبدالكريم سالم الزهراني   ",
+          from: "2025-05-22",
+          to: "2025-05-22",
+          days: "1",
+          doctor: "  احمد سالم جعمان السعدي   ",
+          title: "طب بشري ",
+          date: "2025-05-22"
+        },
+                {
+          leaveCode: "GSL87854566931",
+          idNumber: "1127935219",
+          name: "   زياد عبدالكريم سالم الزهراني      ",
+          from: "2025-05-15",
+          to: "2025-05-15",
+          days: "1",
+          doctor: "  احمد سالم جعمان السعدي   ",
+          title: "طب بشري ",
+          date: "2025-05-15"
+        },
+                {
+          leaveCode: "GSL25060111760",
+          idNumber: "1107272831",
+          name: "   رهام قاسم عثمان جتيم      ",
+          from: "2025-06-23",
+          to: "2025-06-30",
+          days: "8",
+          doctor: "طارق جابر    ",
+          title: "طب بشري ",
+          date: "2025-06-23"
+        },
+                {
+          leaveCode: "GSL87854566931",
+          idNumber: "1069602009",
+          name: "      عماد عزيز محمد المالكي       ",
+          from: "2025-05-31",
+          to: "2025-05-31",
+          days: "1",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-05-31"
+        },
+                {
+          leaveCode: "GSL25060111760",
+          idNumber: "1122428798",
+          name: "   ابتسام علي محمد الشهري      ",
+          from: "2025-05-31",
+          to: "2025-05-31",
+          days: "1",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-05-31"
+        },
+                {
+          leaveCode: "GSL88885586231",
+          idNumber: "1122428798",
+          name: "      ابتسام علي محمد الشهري      ",
+          from: "2025-06-04",
+          to: "2025-06-04",
+          days: "1",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-06-04"
+        },
+                        {
+          leaveCode: "GPL88632395136",
+          idNumber: "1122428798",
+          name: "      ابتسام علي محمد الشهري      ",
+          from: "2025-06-10",
+          to: "2025-06-10",
+          days: "1",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-06-10"
+        },
+                        {
+          leaveCode: "GSL66346495423",
+          idNumber: "1084437860",
+          name: "        ابراهيم عبدالله الجارالله الجارالله       ",
+          from: "2025-05-18",
+          to: "2025-05-18",
+          days: "1",
+          doctor: "  هشام العزب   ",
+          title: "طب بشري ",
+          date: "2025-05-18"
+        },
+                {
+          leaveCode: "GSL59953212832",
+          idNumber: "1068583424",
+          name: "   فاطمه يحي عامر العسيري         ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " هشام العزب      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1090361708",
+          name: "هناء محمد بالغيث القرني",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " بشير احمد خان الله ديلو       ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL88055468431",
+          idNumber: "1062167919",
+          name: "ايناس علي مؤذنه   ",
+          from: "2025-08-13",
+          to: "2025-08-14",
+          days: "2",
+          doctor: " امل سليمان ظافر الشهري   ",
+          title: "أخصائي ",
+          date: "2025-08-13"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1133692424",
+          name: "   شهد محمد مرزوق الجدعاني            ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: "  سيده نسا إقبال      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1068583424",
+          name: "   فاطمه يحي عامر العسيري         ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " هشام العزب      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1068583424",
+          name: "   فاطمه يحي عامر العسيري         ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " هشام العزب      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1068583424",
+          name: "   فاطمه يحي عامر العسيري         ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " هشام العزب      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1068583424",
+          name: "   فاطمه يحي عامر العسيري         ",
+          from: "2025-06-21",
+          to: "2025-06-21",
+          days: "1",
+          doctor: " هشام العزب      ",
+          title: "طب بشري",
+          date: "2025-06-21"
+        },
+                        {
+          leaveCode: "GSL59953212832",
+          idNumber: "1110201223",
+          name: "   ساره محمد سعود العطيش            ",
+          from: "2025-08-28",
+          to: "2025-08-28",
+          days: "1",
+          doctor: " فادي محسن مهدي            ",
+          title: "طبيب عام ",
+          date: "2025-08-28"
+        },
+      ];
+      localStorage.setItem("leaveData", JSON.stringify(data));
+    }
+
+    function checkData() {
+      const idNumberInput = document.getElementById('idNumber');
+      const leaveCodeInput = document.getElementById('leaveCode');
+      const idNumber = idNumberInput.value.trim();
+      const leaveCode = leaveCodeInput.value.trim();
+      const emptyFieldsError = document.getElementById('emptyFieldsError');
+      const searchBtn = document.getElementById('searchBtn');
+      const searchBtnText = document.getElementById('searchBtnText'); // Keep reference to text span
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const errorTab = document.getElementById("errorTab");
+      const resultBox = document.getElementById("resultBox");
+      const leaveCodeContainer = document.getElementById('leaveCodeContainer');
+      const idNumberContainer = document.getElementById('idNumberContainer');
+
+      // Check for empty fields first
+      if (!idNumber || !leaveCode) {
+        emptyFieldsError.style.display = 'block';
+        leaveCodeContainer.style.marginTop = '5px'; 
+        idNumberContainer.style.marginTop = '5px'; 
+        errorTab.style.display = 'none';
+        resultBox.style.display = 'none';
+        return;
+      } else {
+        emptyFieldsError.style.display = 'none';
+        leaveCodeContainer.style.marginTop = ''; 
+        idNumberContainer.style.marginTop = ''; 
+      }
+
+      // --- Start Loading State --- 
+      // searchBtnText.style.display = 'none'; // **REMOVED**: Keep text visible
+      loadingSpinner.style.display = 'inline-block'; // Show spinner next to text
+      searchBtn.classList.add('loading'); // Add class for darker background
+      searchBtn.disabled = true;
+      errorTab.style.display = "none"; 
+      resultBox.style.display = "none";
+
+      // --- Simulate 2-second delay (Changed from 3000 to 2000) --- 
+      setTimeout(() => {
+        const storedData = JSON.parse(localStorage.getItem("leaveData")) || [];
+        const result = storedData.find(d => d.leaveCode === leaveCode && d.idNumber === idNumber);
+
+        // --- End Loading State --- 
+        loadingSpinner.style.display = 'none'; // Hide spinner
+        searchBtn.classList.remove('loading'); // Remove class to restore original background
+        searchBtn.disabled = false;
+        // searchBtnText.style.display = 'inline'; // **REMOVED**: Text was never hidden
+
+        // Process the result
+        if (result) {
+          resultBox.innerHTML = `
+            <div class="info-label bold">الاسم</div><div class="info-data normal">${result.name.trim()}</div>
+            <div class="info-label bold">تاريخ إصدار تقرير الاجازة</div><div class="info-data normal">${result.date}</div>
+            <div class="info-label bold">تبدأ من</div><div class="info-data normal">${result.from}</div>
+            <div class="info-label bold">وحتى</div><div class="info-data normal">${result.to}</div>
+            <div class="info-label bold">المدة بالأيام</div><div class="info-data normal">${result.days}</div>
+            <div class="info-label bold">اسم الطبيب</div><div class="info-data normal">${result.doctor.trim()}</div>
+            <div class="info-label bold">المسمى الوظيفي</div><div class="info-data normal">${result.title.trim()}</div>
+          `;
+          resultBox.style.display = "block";
+          errorTab.style.display = "none";
+          document.getElementById('searchBtn').style.display = 'none';
+          document.getElementById('backBtn').style.display = 'none';
+          document.getElementById('newSearchBtn').style.display = 'block';
+          document.getElementById('backListBtn').style.display = 'block';
+        } else {
+          resultBox.style.display = "none";
+          errorTab.style.display = "block";
+          document.getElementById('searchBtn').style.display = 'block'; 
+          document.getElementById('backBtn').style.display = 'block';
+          document.getElementById('newSearchBtn').style.display = 'none';
+          document.getElementById('backListBtn').style.display = 'none';
+        }
+      }, 2000); // 2000 milliseconds = 2 seconds
+    }
+
+    function hideEmptyError() {
+      const emptyFieldsError = document.getElementById('emptyFieldsError');
+      const leaveCodeContainer = document.getElementById('leaveCodeContainer');
+      const idNumberContainer = document.getElementById('idNumberContainer');
+      if (emptyFieldsError.style.display === 'block') {
+          emptyFieldsError.style.display = 'none';
+          leaveCodeContainer.style.marginTop = ''; 
+          idNumberContainer.style.marginTop = ''; 
+      }
+    }
+
+    function resetForm() {
+      const searchBtn = document.getElementById('searchBtn'); // Get button reference
+      document.getElementById('idNumber').value = '';
+      document.getElementById('leaveCode').value = '';
+      document.getElementById('errorTab').style.display = 'none';
+      document.getElementById('emptyFieldsError').style.display = 'none';
+      document.getElementById('resultBox').style.display = 'none';
+      document.getElementById('searchBtn').style.display = 'block';
+      document.getElementById('backBtn').style.display = 'block';
+      document.getElementById('newSearchBtn').style.display = 'none';
+      document.getElementById('backListBtn').style.display = 'none';
+      // Reset button state fully
+      document.getElementById('loadingSpinner').style.display = 'none';
+      searchBtn.classList.remove('loading'); // Ensure loading class is removed
+      searchBtn.disabled = false;
+      // Reset margin
+      document.getElementById('leaveCodeContainer').style.marginTop = ''; 
+      document.getElementById('idNumberContainer').style.marginTop = ''; 
+    }
+
+    function newSearch() {
+      resetForm();
+    }
+
+    window.addEventListener('load', () => {
+      document.getElementById('header').classList.add('show');
+      initializeData();
+      resetForm(); // Ensure initial state is correct
+    });
+  </script>
+</body>
+</html>
